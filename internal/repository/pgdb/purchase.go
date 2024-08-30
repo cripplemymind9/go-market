@@ -19,8 +19,28 @@ func NewPurchaseRepo(pg *postgres.Postgres) *PurchaseRepo {
 	return &PurchaseRepo{pg}
 }
 
-func (r *PurchaseRepo) CreatePurchase(ctx context.Context, purchase entity.Purchase) (int, error) {
+func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchase) (int, error) {
+	tx, err := r.Pool.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - r.Pool.Begin: %v", err)
+	}
+	defer tx.Rollback(ctx)
+	
 	sql, args, err := squirrel.
+		Update("products").
+		Set("quantity", squirrel.Expr("quantity - ?", purchase.Quantity)).
+		Where("id = ?", purchase.ProductID).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - squirrel.Update: %v", err)
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - tx.Exec: %v", err)
+	}
+
+	sql, args, err = squirrel.
 		Insert("purchases").
 		Columns("user_id", "product_id", "quantity").
 		Values(
@@ -31,11 +51,11 @@ func (r *PurchaseRepo) CreatePurchase(ctx context.Context, purchase entity.Purch
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("PurchaseRepo.CreatePurchase - squirrel.Insert:%v", err)
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - squirrel.Insert:%v", err)
 	}
 
 	var id int
-	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&id)
+	err = tx.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if ok := errors.As(err, &pgErr); ok {
@@ -43,25 +63,30 @@ func (r *PurchaseRepo) CreatePurchase(ctx context.Context, purchase entity.Purch
 				return 0, repoerrs.ErrAlreadyExists
 			}
 		}
-		return 0, fmt.Errorf("PurchaseRepo.CreatePurchase - r.Pool.QueryRow:%v", err)
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - tx.QueryRow:%v", err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - tx.Commit:%v", err)
 	}
 
 	return id, nil
 }
 
-func (r *PurchaseRepo) GetPurchasesByUserId(ctx context.Context, id int) ([]entity.Purchase, error) {
+func (r *PurchaseRepo) GetUserPurchases(ctx context.Context, userId int) ([]entity.Purchase, error) {
 	sql, args, err := squirrel.
 		Select("*").
 		From("purchases").
-		Where("user_id = ?", id).
+		Where("user_id = ?", userId).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByUserId - squirrel.Select:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetUserPurchases - squirrel.Select:%v", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByUserId - r.Pool.Query:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetUserPurchases - r.Pool.Query:%v", err)
 	}
 	defer rows.Close()
 
@@ -76,7 +101,7 @@ func (r *PurchaseRepo) GetPurchasesByUserId(ctx context.Context, id int) ([]enti
 			&purchase.Timestamp,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByUserId - rows.Next:%v", err)
+			return nil, fmt.Errorf("PurchaseRepo.GetUserPurchases - rows.Next:%v", err)
 		}
 		purchases = append(purchases, purchase)
 	}
@@ -84,19 +109,19 @@ func (r *PurchaseRepo) GetPurchasesByUserId(ctx context.Context, id int) ([]enti
 	return purchases, nil
 }
 
-func (r *PurchaseRepo) GetPurchasesByProductId(ctx context.Context, id int) ([]entity.Purchase, error) {
+func (r *PurchaseRepo) GetProductPurchases(ctx context.Context, productId int) ([]entity.Purchase, error) {
 	sql, args, err := squirrel.
 		Select("*").
 		From("purchases").
-		Where("product_id = ?", id).
+		Where("product_id = ?", productId).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByProductId - squirrel.Select:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - squirrel.Select:%v", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByProductId - r.Pool.Query:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - r.Pool.Query:%v", err)
 	}
 	defer rows.Close()
 
@@ -111,7 +136,7 @@ func (r *PurchaseRepo) GetPurchasesByProductId(ctx context.Context, id int) ([]e
 			&purchase.Timestamp,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("PurchaseRepo.GetPurchasesByProductId - rows.Next:%v", err)
+			return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - rows.Next:%v", err)
 		}
 		purchases = append(purchases, purchase)
 	}	

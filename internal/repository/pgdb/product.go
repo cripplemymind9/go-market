@@ -20,7 +20,7 @@ func NewProductRepo(pg *postgres.Postgres) *ProductRepo {
 	return &ProductRepo{pg}
 }
 
-func (r *ProductRepo) CreateProduct(ctx context.Context, product entity.Product) (int, error) {
+func (r *ProductRepo) AddProduct(ctx context.Context, product entity.Product) (int, error) {
 	sql, args, err := squirrel.
 		Insert("products").
 		Columns("name", "description", "price", "quantity").
@@ -33,7 +33,7 @@ func (r *ProductRepo) CreateProduct(ctx context.Context, product entity.Product)
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("ProductRepo.CreateProduct - squirrel.Insert: %v", err)
+		return 0, fmt.Errorf("ProductRepo.AddProduct - squirrel.Insert: %v", err)
 	}
 
 	var id int
@@ -45,7 +45,7 @@ func (r *ProductRepo) CreateProduct(ctx context.Context, product entity.Product)
 				return 0, repoerrs.ErrAlreadyExists
 			}
 		}
-		return 0, fmt.Errorf("ProductRepo.CreateProduct - r.Pool.QueryRow: %v", err)
+		return 0, fmt.Errorf("ProductRepo.AddProduct - r.Pool.QueryRow: %v", err)
 	}
 
 	return id, nil
@@ -85,11 +85,11 @@ func (r *ProductRepo) GetAllProducts(ctx context.Context) ([]entity.Product, err
 	return products, nil
 }
 
-func (r *ProductRepo) GetProductById(ctx context.Context, id int) (entity.Product, error) {
+func (r *ProductRepo) GetProductById(ctx context.Context, productId int) (entity.Product, error) {
 	sql, args, err := squirrel.
 		Select("*").
 		From("products").
-		Where("id = ?", id).
+		Where("id = ?", productId).
 		ToSql()
 	if err != nil {
 		return entity.Product{}, fmt.Errorf("ProductRepo.GetProductById - squirrel.Select: %v", err)
@@ -133,10 +133,10 @@ func (r *ProductRepo) UpdateProduct(ctx context.Context, product entity.Product)
 	return nil
 }
 
-func (r *ProductRepo) DeleteProduct(ctx context.Context, id int) error {
+func (r *ProductRepo) DeleteProduct(ctx context.Context, productId int) error {
 	sql, args, err := squirrel.
 		Delete("products").
-		Where("id = ?", id).
+		Where("id = ?", productId).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("ProductRepo.DeleteProduct - squirrel.Delete: %v", err)

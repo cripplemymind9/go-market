@@ -4,7 +4,6 @@ import (
 	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/pkg/postgres"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5"
@@ -21,7 +20,7 @@ func NewUserRepo(pg *postgres.Postgres) *UserRepo {
 	return &UserRepo{pg}
 }
 
-func (r *UserRepo) CreateUser(ctx context.Context, user entity.User) (int, error) {
+func (r *UserRepo) RegisterUser(ctx context.Context, user entity.User) (int, error) {
 	sql, args, err := squirrel.
 		Insert("users").
 		Columns("username", "password", "email").
@@ -33,7 +32,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user entity.User) (int, error
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("UserRepo.CreateUser - squirrel.Insert: %v", err)
+		return 0, fmt.Errorf("UserRepo.RegisterUser - squirrel.Insert: %v", err)
 	}
 
 	var id int
@@ -45,20 +44,49 @@ func (r *UserRepo) CreateUser(ctx context.Context, user entity.User) (int, error
 				return 0, repoerrs.ErrAlreadyExists
 			}
 		}
-		return 0, fmt.Errorf("UserRepo.CreateUser - r.Pool.QueryRow: %v", err)
+		return 0, fmt.Errorf("UserRepo.RegisterUser - r.Pool.QueryRow: %v", err)
 	}
 
 	return id, nil
 }
 
-func (r *UserRepo) GetUserByUserId(ctx context.Context, id int) (entity.User, error) {
+func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (entity.User, error) {
+	sql, args, err := squirrel.
+		Select("*").From("users").
+		Where(
+			squirrel.Eq{"username": username},
+			squirrel.Eq{"password": password},
+		).
+		ToSql()
+	if err != nil {
+		return entity.User{}, fmt.Errorf("UserRepo.LoginUser - squirrel.Select: %v", err)
+	}
+
+	var user entity.User
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+		&user.Email,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return entity.User{}, fmt.Errorf("user not found")
+		}
+		return entity.User{}, fmt.Errorf("UserRepo.LoginUser - r.Pool.QueryRow: %v", err)
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) GetUserProfile(ctx context.Context, id int) (entity.User, error) {
 	sql, args, err := squirrel.
 		Select("*").
 		From("users").
 		Where("id = ?", id).
 		ToSql()
 	if err != nil {
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUserId - squirrel.Select: %v", err)
+		return entity.User{}, fmt.Errorf("UserRepo.GetUserProfile - squirrel.Select: %v", err)
 	}
 
 	var user entity.User
@@ -72,65 +100,7 @@ func (r *UserRepo) GetUserByUserId(ctx context.Context, id int) (entity.User, er
 		if errors.Is(err, pgx.ErrNoRows) {
 			return entity.User{}, repoerrs.ErrNotFound
 		}
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUserId - r.Pool.QueryRow: %v", err)
-	}
-
-	return user, nil
-}
-
-func (r *UserRepo) GetUserByUsername(ctx context.Context, username string) (entity.User, error) {
-	sql, args, err := squirrel.
-		Select("*").
-		From("users").
-		Where(
-			squirrel.Eq{"username": username},
-		).
-		ToSql()
-	if err != nil {
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUsername - squirrel.Select: %v", err)
-	}
-
-	var user entity.User
-	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Password,
-		&user.Email,
-	)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return entity.User{}, fmt.Errorf("user not found")
-		}
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUsername - r.Pool.QueryRow: %v", err)
-	}
-
-	return user, nil
-}
-
-func (r *UserRepo) GetUserByUsernameAndPassword(ctx context.Context, username, password string) (entity.User, error) {
-	sql, args, err := squirrel.
-		Select("*").From("users").
-		Where(
-			squirrel.Eq{"username": username},
-			squirrel.Eq{"password": password},
-		).
-		ToSql()
-	if err != nil {
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUsernameAndPassword - squirrel.Select: %v", err)
-	}
-
-	var user entity.User
-	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Password,
-		&user.Email,
-	)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return entity.User{}, fmt.Errorf("user not found")
-		}
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserByUsernameAndPassword - r.Pool.QueryRow: %v", err)
+		return entity.User{}, fmt.Errorf("UserRepo.GetUserProfile - r.Pool.QueryRow: %v", err)
 	}
 
 	return user, nil

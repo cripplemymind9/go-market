@@ -8,24 +8,23 @@ import (
 )
 
 type User interface {
-	CreateUser(ctx context.Context, user entity.User) (int, error)
-	GetUserByUserId(ctx context.Context, id int) (entity.User, error)
-	GetUserByUsername(ctx context.Context, username string) (entity.User, error)
-	GetUserByUsernameAndPassword(ctx context.Context, username, password string) (entity.User, error)
+	RegisterUser(ctx context.Context, user entity.User) (int, error)
+	LoginUser(ctx context.Context, username, password string) (entity.User, error)
+	GetUserProfile(ctx context.Context, userId int) (entity.User, error)
 }
 
 type Product interface {
-	CreateProduct(ctx context.Context, product entity.Product) (int, error)
+	AddProduct(ctx context.Context, product entity.Product) (int, error)
 	GetAllProducts(ctx context.Context) ([]entity.Product, error)
-	GetProductById(ctx context.Context, id int) (entity.Product, error)
+	GetProductById(ctx context.Context, productId int) (entity.Product, error)
 	UpdateProduct(ctx context.Context, product entity.Product) error
-	DeleteProduct(ctx context.Context, id int) error
+	DeleteProduct(ctx context.Context, productId int) error
 }
 
 type Purchase interface {
-	CreatePurchase(ctx context.Context, purchase entity.Purchase) (int, error)
-	GetPurchasesByUserId(ctx context.Context, id int) ([]entity.Purchase, error)
-	GetPurchasesByProductId(ctx context.Context, id int) ([]entity.Purchase, error)
+	MakePurchase(ctx context.Context, purchase entity.Purchase) (int, error)
+	GetUserPurchases(ctx context.Context, userId int) ([]entity.Purchase, error)
+	GetProductPurchases(ctx context.Context, productId int) ([]entity.Purchase, error)
 }
 
 type Repositories struct {
@@ -38,5 +37,6 @@ func NewRepositories(pg *postgres.Postgres) *Repositories {
 	return &Repositories{
 		User: pgdb.NewUserRepo(pg),
 		Product: pgdb.NewProductRepo(pg),
+		Purchase: pgdb.NewPurchaseRepo(pg),
 	}
 }
