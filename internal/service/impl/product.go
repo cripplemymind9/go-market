@@ -58,6 +58,7 @@ func (s *ProductService) GetProductById(ctx context.Context, productId int) (ent
 
 func (s *ProductService) UpdateProduct(ctx context.Context, input types.ProductUpdateProductInput) error {
 	product := entity.Product{
+		ID: input.ID,
 		Name: input.Name,
 		Description: input.Description,
 		Price: input.Price,

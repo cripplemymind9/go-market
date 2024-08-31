@@ -1,14 +1,13 @@
 package service
 
 import (
-	"context"
-	"time"
-
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/service/impl"
 	"github.com/cripplemymind9/go-market/internal/service/types"
 	"github.com/cripplemymind9/go-market/pkg/hasher"
+	"context"
+	"time"
 )
 
 type Auth interface {
