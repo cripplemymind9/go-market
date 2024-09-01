@@ -1,0 +1,17 @@
+app:
+  name: 'MyApp'
+  version: '1.0.0'
+
+http:
+  port: 8080
+
+log:
+  level: 'debug'
+
+postgres:
+  max_pool_size: 10
+  url: 'postgres://postgres:Gogaminoga2019&@localhost:5432/postgres?sslmode=disable'
+
+jwt:
+  token_ttl: '3h'
+  sign_key: 'supersecretkey'

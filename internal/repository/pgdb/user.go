@@ -34,6 +34,7 @@ func (r *UserRepo) RegisterUser(ctx context.Context, user entity.User) (int, err
 	if err != nil {
 		return 0, fmt.Errorf("UserRepo.RegisterUser - squirrel.Insert: %v", err)
 	}
+	fmt.Printf("Generated SQL: %s, Args: %v\n", sql, args)
 
 	var id int
 	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&id)

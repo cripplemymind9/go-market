@@ -9,11 +9,11 @@ type PasswordHasher interface {
 
 type BcryptHasher struct {}
 
-func NewBcryptHasher(cost int) *BcryptHasher {
+func NewBcryptHasher() *BcryptHasher {
 	return &BcryptHasher{}
 }
 
-func (h *BcryptHasher) Hash(password string) (string, error) {
+func (h *BcryptHasher) HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -21,6 +21,6 @@ func (h *BcryptHasher) Hash(password string) (string, error) {
 	return string(hash), nil
 }
 
-func (h *BcryptHasher) Compare(hashedPassword, password string) error {
+func (h *BcryptHasher) VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

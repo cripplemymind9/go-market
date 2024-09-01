@@ -26,7 +26,7 @@ func newAuthRoutes(g *gin.RouterGroup, authService service.Auth, validator *vali
 
 type signUpInput struct {
 	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"reauired"`
+	Password string `json:"password" validate:"required"`
 	Email 	 string `json:"email" validate:"required,email"`
 }
 
