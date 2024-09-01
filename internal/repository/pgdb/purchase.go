@@ -26,13 +26,13 @@ func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchas
 	}
 	defer tx.Rollback(ctx)
 	
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Update("products").
 		Set("quantity", squirrel.Expr("quantity - ?", purchase.Quantity)).
 		Where("id = ?", purchase.ProductID).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - squirrel.Update: %v", err)
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - r.Builder..Update: %v", err)
 	}
 
 	_, err = tx.Exec(ctx, sql, args...)
@@ -40,7 +40,7 @@ func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchas
 		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - tx.Exec: %v", err)
 	}
 
-	sql, args, err = squirrel.
+	sql, args, err = r.Builder.
 		Insert("purchases").
 		Columns("user_id", "product_id", "quantity").
 		Values(
@@ -51,7 +51,7 @@ func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchas
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - squirrel.Insert:%v", err)
+		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - r.Builder.Insert:%v", err)
 	}
 
 	var id int
@@ -75,13 +75,13 @@ func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchas
 }
 
 func (r *PurchaseRepo) GetUserPurchases(ctx context.Context, userId int) ([]entity.Purchase, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").
 		From("purchases").
 		Where("user_id = ?", userId).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetUserPurchases - squirrel.Select:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetUserPurchases - r.Builder.Select:%v", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
@@ -110,13 +110,13 @@ func (r *PurchaseRepo) GetUserPurchases(ctx context.Context, userId int) ([]enti
 }
 
 func (r *PurchaseRepo) GetProductPurchases(ctx context.Context, productId int) ([]entity.Purchase, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").
 		From("purchases").
 		Where("product_id = ?", productId).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - squirrel.Select:%v", err)
+		return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - r.Builder.Select:%v", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)

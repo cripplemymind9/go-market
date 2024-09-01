@@ -10,5 +10,7 @@ var (
 )
 
 func newErrorResponse(c *gin.Context, errStatus int, message string) {
-	c.JSON(errStatus, gin.H{"error": message})
+	err := errors.New(message)
+	
+	c.JSON(errStatus, gin.H{"error": err.Error()})
 }

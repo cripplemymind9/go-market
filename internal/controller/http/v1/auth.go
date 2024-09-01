@@ -50,7 +50,7 @@ func (r *authRoutes) signUp(c *gin.Context) {
 	})
 	if err != nil {
 		if err == serviceerrs.ErrUserAlreadyExists {
-			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			newErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")

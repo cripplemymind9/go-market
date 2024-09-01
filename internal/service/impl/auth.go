@@ -52,7 +52,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, input types.AuthRegister
 	userId, err := s.userRepo.RegisterUser(ctx, user)
 	if err != nil {
 		if errors.Is(err, repoerrs.ErrAlreadyExists) {
-			return 0, repoerrs.ErrAlreadyExists
+			return 0, serviceerrs.ErrUserAlreadyExists
 		}
 		log.Errorf("AuthService.CreateUser - s.userRepo.RegisterUser: %v", err)
 		return 0, serviceerrs.ErrCannotCreateUser

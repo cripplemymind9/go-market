@@ -21,7 +21,7 @@ func NewUserRepo(pg *postgres.Postgres) *UserRepo {
 }
 
 func (r *UserRepo) RegisterUser(ctx context.Context, user entity.User) (int, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Insert("users").
 		Columns("username", "password", "email").
 		Values(
@@ -32,27 +32,26 @@ func (r *UserRepo) RegisterUser(ctx context.Context, user entity.User) (int, err
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("UserRepo.RegisterUser - squirrel.Insert: %v", err)
+		return 0, fmt.Errorf("UserRepo.RegisterUser - r.Builder.Insert: %v", err)
 	}
-	fmt.Printf("Generated SQL: %s, Args: %v\n", sql, args)
 
 	var id int
 	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
 		var pgErr *pgconn.PgError
-		if ok := errors.As(err, &pgErr); !ok {
+		if ok := errors.As(err, &pgErr); ok {
 			if pgErr.Code == "23505" {
 				return 0, repoerrs.ErrAlreadyExists
 			}
 		}
-		return 0, fmt.Errorf("UserRepo.RegisterUser - r.Pool.QueryRow: %v", err)
+		return 0, fmt.Errorf("UserRepo.CreateUser - r.Pool.QueryRow: %v", err)
 	}
 
 	return id, nil
 }
 
 func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (entity.User, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").From("users").
 		Where(
 			squirrel.Eq{"username": username},
@@ -60,7 +59,7 @@ func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (en
 		).
 		ToSql()
 	if err != nil {
-		return entity.User{}, fmt.Errorf("UserRepo.LoginUser - squirrel.Select: %v", err)
+		return entity.User{}, fmt.Errorf("UserRepo.LoginUser - r.Bulder.Select: %v", err)
 	}
 
 	var user entity.User
@@ -81,13 +80,13 @@ func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (en
 }
 
 func (r *UserRepo) GetUserProfile(ctx context.Context, id int) (entity.User, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").
 		From("users").
 		Where("id = ?", id).
 		ToSql()
 	if err != nil {
-		return entity.User{}, fmt.Errorf("UserRepo.GetUserProfile - squirrel.Select: %v", err)
+		return entity.User{}, fmt.Errorf("UserRepo.GetUserProfile - r.Builder.Select: %v", err)
 	}
 
 	var user entity.User

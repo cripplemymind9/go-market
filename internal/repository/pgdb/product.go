@@ -4,7 +4,6 @@ import (
 	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/pkg/postgres"
-	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5"
 	"context"
@@ -21,7 +20,7 @@ func NewProductRepo(pg *postgres.Postgres) *ProductRepo {
 }
 
 func (r *ProductRepo) AddProduct(ctx context.Context, product entity.Product) (int, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Insert("products").
 		Columns("name", "description", "price", "quantity").
 		Values(
@@ -33,7 +32,7 @@ func (r *ProductRepo) AddProduct(ctx context.Context, product entity.Product) (i
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("ProductRepo.AddProduct - squirrel.Insert: %v", err)
+		return 0, fmt.Errorf("ProductRepo.AddProduct - r.Builder.Insert: %v", err)
 	}
 
 	var id int
@@ -52,12 +51,12 @@ func (r *ProductRepo) AddProduct(ctx context.Context, product entity.Product) (i
 }
 
 func (r *ProductRepo) GetAllProducts(ctx context.Context) ([]entity.Product, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").
 		From("products").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("ProductRepo.GetAllProducts - squirrel.Select: %v", err)
+		return nil, fmt.Errorf("ProductRepo.GetAllProducts - r.Builder.Select: %v", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
@@ -86,13 +85,13 @@ func (r *ProductRepo) GetAllProducts(ctx context.Context) ([]entity.Product, err
 }
 
 func (r *ProductRepo) GetProductById(ctx context.Context, productId int) (entity.Product, error) {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Select("*").
 		From("products").
 		Where("id = ?", productId).
 		ToSql()
 	if err != nil {
-		return entity.Product{}, fmt.Errorf("ProductRepo.GetProductById - squirrel.Select: %v", err)
+		return entity.Product{}, fmt.Errorf("ProductRepo.GetProductById - r.Builder.Select: %v", err)
 	}
 
 	var product entity.Product
@@ -114,7 +113,7 @@ func (r *ProductRepo) GetProductById(ctx context.Context, productId int) (entity
 }
 
 func (r *ProductRepo) UpdateProduct(ctx context.Context, product entity.Product) error {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Update("products").
 		Set("name", product.Name).
 		Set("description", product.Description).
@@ -123,7 +122,7 @@ func (r *ProductRepo) UpdateProduct(ctx context.Context, product entity.Product)
 		Where("id = ?", product.ID).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("ProductRepo.UpdateProduct - squirrel.Update: %v", err)
+		return fmt.Errorf("ProductRepo.UpdateProduct - r.Builder.Update: %v", err)
 	}
 
 	if _, err = r.Pool.Exec(ctx, sql, args); err != nil {
@@ -134,12 +133,12 @@ func (r *ProductRepo) UpdateProduct(ctx context.Context, product entity.Product)
 }
 
 func (r *ProductRepo) DeleteProduct(ctx context.Context, productId int) error {
-	sql, args, err := squirrel.
+	sql, args, err := r.Builder.
 		Delete("products").
 		Where("id = ?", productId).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("ProductRepo.DeleteProduct - squirrel.Delete: %v", err)
+		return fmt.Errorf("ProductRepo.DeleteProduct - r.Builder.Delete: %v", err)
 	}
 
 	if _, err = r.Pool.Exec(ctx, sql, args); err != nil {
