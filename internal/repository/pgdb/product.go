@@ -93,9 +93,10 @@ func (r *ProductRepo) GetProductById(ctx context.Context, productId int) (entity
 	if err != nil {
 		return entity.Product{}, fmt.Errorf("ProductRepo.GetProductById - r.Builder.Select: %v", err)
 	}
+	fmt.Printf("Generated SQL: %s, Args: %v\n", sql, args)
 
 	var product entity.Product
-	err = r.Pool.QueryRow(ctx, sql, args).Scan(
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
 		&product.ID,
 		&product.Name,
 		&product.Description,
@@ -125,7 +126,7 @@ func (r *ProductRepo) UpdateProduct(ctx context.Context, product entity.Product)
 		return fmt.Errorf("ProductRepo.UpdateProduct - r.Builder.Update: %v", err)
 	}
 
-	if _, err = r.Pool.Exec(ctx, sql, args); err != nil {
+	if _, err = r.Pool.Exec(ctx, sql, args...); err != nil {
 		return fmt.Errorf("ProductRepo.UpdateProduct - r.Pool.Exec: %v", err)
 	}
 
@@ -141,7 +142,7 @@ func (r *ProductRepo) DeleteProduct(ctx context.Context, productId int) error {
 		return fmt.Errorf("ProductRepo.DeleteProduct - r.Builder.Delete: %v", err)
 	}
 
-	if _, err = r.Pool.Exec(ctx, sql, args); err != nil {
+	if _, err = r.Pool.Exec(ctx, sql, args...); err != nil {
 		return fmt.Errorf("ProductRepo.DeleteProduct - r.Pool.Exec: %v", err)
 	}
 

@@ -50,12 +50,11 @@ func (r *UserRepo) RegisterUser(ctx context.Context, user entity.User) (int, err
 	return id, nil
 }
 
-func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (entity.User, error) {
+func (r *UserRepo) LoginUser(ctx context.Context, username string) (entity.User, error) {
 	sql, args, err := r.Builder.
 		Select("*").From("users").
 		Where(
 			squirrel.Eq{"username": username},
-			squirrel.Eq{"password": password},
 		).
 		ToSql()
 	if err != nil {
@@ -71,7 +70,7 @@ func (r *UserRepo) LoginUser(ctx context.Context, username, password string) (en
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return entity.User{}, fmt.Errorf("user not found")
+			return entity.User{}, repoerrs.ErrNotFound
 		}
 		return entity.User{}, fmt.Errorf("UserRepo.LoginUser - r.Pool.QueryRow: %v", err)
 	}

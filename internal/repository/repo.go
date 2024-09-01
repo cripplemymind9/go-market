@@ -9,7 +9,7 @@ import (
 
 type User interface {
 	RegisterUser(ctx context.Context, user entity.User) (int, error)
-	LoginUser(ctx context.Context, username, password string) (entity.User, error)
+	LoginUser(ctx context.Context, username string) (entity.User, error)
 	GetUserProfile(ctx context.Context, userId int) (entity.User, error)
 }
 

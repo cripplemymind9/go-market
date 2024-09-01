@@ -1,18 +1,19 @@
 package impl
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
+	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
 	"github.com/cripplemymind9/go-market/internal/service/serviceerrs"
 	"github.com/cripplemymind9/go-market/internal/service/types"
-	"github.com/cripplemymind9/go-market/internal/repository"
-	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/pkg/hasher"
-	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
-	"context"
-	"errors"
-	"time"
-	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type TokenClaims struct {
@@ -62,18 +63,18 @@ func (s *AuthService) RegisterUser(ctx context.Context, input types.AuthRegister
 }
 
 func (s *AuthService) GenerateToken(ctx context.Context, input types.AuthGenerateTokenInput) (string, error) {
-	hashedPassword, err := s.passwordHasher.HashPassword(input.Password)
-	if err != nil {
-		return "", serviceerrs.ErrPasswordHashingFailed
-	}
-	
-	user, err := s.userRepo.LoginUser(ctx, input.Username, hashedPassword)
+	user, err := s.userRepo.LoginUser(ctx, input.Username)
 	if err != nil {
 		if errors.Is(err, repoerrs.ErrNotFound) {
 			return "", serviceerrs.ErrUserNotFound
 		}
 		log.Errorf("AuthService.GenerateToken - s.userRepo.LoginUser: %v", err)
 		return "", serviceerrs.ErrCannotGetUser
+	}
+
+	if err := s.passwordHasher.VerifyPassword(user.Password, input.Password); err != nil {
+		log.Errorf("AuthService.GenerateToken - password verification failed: %v", err)
+		return "", serviceerrs.ErrInvalidPassword
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &TokenClaims{

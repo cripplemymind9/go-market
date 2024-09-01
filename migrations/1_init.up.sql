@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS products(
+CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT NOT NULL,

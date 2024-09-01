@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type productRoutes struct {
@@ -23,9 +24,9 @@ func newProductRoutes(g *gin.RouterGroup, productService service.Product, valida
 
 	g.POST("/add-product", r.addProduct)
 	g.GET("/get-products", r.getAllProducts)
-	g.GET("/get-product", r.getProduct)
-	g.PUT("/update-product", r.updateProduct)
-	g.DELETE("/delete-product", r.deleteProduct)
+	g.GET("/get-product/:id", r.getProduct)
+	g.PUT("/update-product/:id", r.updateProduct)
+	g.DELETE("/delete-product/:id", r.deleteProduct)
 }
 
 type addProductInput struct {
@@ -89,24 +90,16 @@ func (r *productRoutes) getAllProducts(c *gin.Context) {
 	})
 }
 
-type getProductInput struct {
-	ID int `json:"product_id" validate:"required"`
-}
 
 func (r *productRoutes) getProduct(c *gin.Context) {
-	var input getProductInput
-
-	if err := c.ShouldBindBodyWithJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid request body")
+	param := c.Param("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, string(err.Error()))
 		return
 	}
 
-	if err := r.validator.Struct(input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	product, err := r.productService.GetProductById(c.Request.Context(), input.ID)
+	product, err := r.productService.GetProductById(c.Request.Context(), id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
@@ -122,7 +115,6 @@ func (r *productRoutes) getProduct(c *gin.Context) {
 }
 
 type updateProductInput struct {
-	ID 				int 	`json:"product_id" validate:"required"`
 	Name 			string 	`json:"name" validate:"required"`
 	Description 	string 	`json:"description" validate:"required"`
 	Price 			float64 `json:"price" validate:"required"`
@@ -130,6 +122,13 @@ type updateProductInput struct {
 }
 
 func (r *productRoutes) updateProduct(c *gin.Context) {
+	param := c.Param("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, string(err.Error()))
+		return
+	}
+
 	var input updateProductInput
 
 	if err := c.ShouldBindBodyWithJSON(&input); err != nil {
@@ -143,7 +142,7 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	}
 
 	if err := r.productService.UpdateProduct(c.Request.Context(), types.ProductUpdateProductInput{
-		ID: input.ID,
+		ID: id,
 		Name: input.Name,
 		Description: input.Description,
 		Price: input.Price,
@@ -158,24 +157,15 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	})
 }
 
-type deleteProductInput struct {
-	ID int `json:"product_id" validate:"required"`
-}
-
 func (r *productRoutes) deleteProduct(c *gin.Context) {
-	var input deleteProductInput
-
-	if err := c.ShouldBindBodyWithJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid request body")
+	param := c.Param("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, string(err.Error()))
 		return
 	}
 
-	if err := r.validator.Struct(input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if err := r.productService.DeleteProduct(c.Request.Context(), input.ID); err != nil {
+	if err := r.productService.DeleteProduct(c.Request.Context(), id); err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
 	}

@@ -89,11 +89,18 @@ func (r *authRoutes) signIn(c *gin.Context) {
 		Password: input.Password,
 	})
 	if err != nil {
-		if err == serviceerrs.ErrUserNotFound {
-			newErrorResponse(c, http.StatusBadRequest, "invalid username or password")
-			return
+		var statusCode int
+		var message string
+
+		switch err {
+		case serviceerrs.ErrUserNotFound, serviceerrs.ErrInvalidPassword:
+			statusCode = http.StatusBadRequest
+			message = "Invalid credentials"
+		default:
+			statusCode = http.StatusInternalServerError
+			message = "Internal server error"
 		}
-		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		newErrorResponse(c, statusCode, message)
 		return
 	}
 
