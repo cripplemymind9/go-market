@@ -24,12 +24,24 @@ func newAuthRoutes(g *gin.RouterGroup, authService service.Auth, validator *vali
 	g.POST("/sign-in", r.signIn)
 }
 
+// signUpInput представляет собой модель данных для запроса на регистрацию.
 type signUpInput struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 	Email 	 string `json:"email" validate:"required,email"`
 }
 
+// signUp регистрирует нового пользователя
+// @Summary User registration
+// @Description Register a new user with username, password, and email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body signUpInput true "User registration input"
+// @Success 201 {object} v1.authRoutes.signUp.response
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Router /auth/sign-up [post]
 func (r *authRoutes) signUp(c *gin.Context) {
 	var input signUpInput
 
@@ -66,11 +78,23 @@ func (r *authRoutes) signUp(c *gin.Context) {
 	})
 }
 
+// signInInput представляет собой модель данных для запроса на вход.
 type signInInput struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
+// signIn выполняет аутентификацию пользователя
+// @Summary User login
+// @Description Authenticate a user and return a JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body signInInput true "User login input"
+// @Success 201 {object} v1.authRoutes.signIn.response
+// @Failure 400 {object} ErrorResonse "Invalid credentials or bad request"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Router /auth/sign-in [post]
 func (r *authRoutes) signIn(c *gin.Context) {
 	var input signInInput
 

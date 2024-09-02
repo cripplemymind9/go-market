@@ -5,9 +5,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	_ "github.com/cripplemymind9/go-market/docs"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/gin-gonic/gin"
 )
+
+type ErrorResonse struct {
+	Error string `json:"error"`
+}
 
 func NewRouter(router *gin.Engine, services *service.Services, validator *validator.Validate) {
 	router.Use(gin.Recovery())

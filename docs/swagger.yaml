@@ -1,0 +1,398 @@
+basePath: /
+definitions:
+  v1.ErrorResonse:
+    properties:
+      error:
+        type: string
+    type: object
+  v1.addProductInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+    required:
+    - description
+    - name
+    - price
+    - quantity
+    type: object
+  v1.authRoutes:
+    type: object
+  v1.makePurcahseInput:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  v1.productRoutes:
+    type: object
+  v1.purchaseRoutes:
+    type: object
+  v1.signInInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  v1.signUpInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  v1.updateProductInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+    required:
+    - description
+    - name
+    - price
+    - quantity
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: ololoevlan@gmail.com
+    name: Egor K.
+  description: This service manages product purchases and provides endpoints to interact
+    with product and purchase data.
+  title: Go-market
+  version: "1.0"
+paths:
+  /api/v1/products/add-product:
+    post:
+      consumes:
+      - application/json
+      description: Add a new product with name, description, price, and quantity
+      parameters:
+      - description: Product input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.addProductInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.productRoutes'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a new product
+      tags:
+      - products
+  /api/v1/products/delete-product/{id}:
+    delete:
+      description: Delete a product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete product by ID
+      tags:
+      - products
+  /api/v1/products/get-product/{id}:
+    get:
+      description: Retrieve a product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.productRoutes'
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get product by ID
+      tags:
+      - products
+  /api/v1/products/get-products:
+    get:
+      description: Retrieve a list of all available products
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.productRoutes'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all products
+      tags:
+      - products
+  /api/v1/products/update-product/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update product details by ID with new name, description, price,
+        and quantity
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Product update input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.updateProductInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update product by ID
+      tags:
+      - products
+  /api/v1/purchase/get-product-purchase/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of purchases for a specific product by product
+        ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.purchaseRoutes'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get product purchases
+      tags:
+      - purchases
+  /api/v1/purchase/get-user-purchase/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of purchases made by a user specified by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.purchaseRoutes'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user purchases
+      tags:
+      - purchases
+  /api/v1/purchase/make-purchase:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to purchase a product by specifying user ID, product
+        ID, and quantity
+      parameters:
+      - description: Purchase input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.makePurcahseInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.purchaseRoutes'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      security:
+      - ApiKeyAuth: []
+      summary: Make a purchase
+      tags:
+      - purchases
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: User login input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.signInInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.authRoutes'
+        "400":
+          description: Invalid credentials or bad request
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      summary: User login
+      tags:
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, password, and email
+      parameters:
+      - description: User registration input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.signUpInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.authRoutes'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.ErrorResonse'
+      summary: User registration
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

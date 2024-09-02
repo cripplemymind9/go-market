@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type purchaseRoutes struct {
@@ -21,16 +22,29 @@ func newPurchaseRoutes(g *gin.RouterGroup, purchaseService service.Purchase, val
 	}
 
 	g.POST("/make-purchase", r.makePurchase)
-	g.GET("/get-user-purchase", r.getUserPurchases)
-	g.GET("/get-product-purchase", r.getProductPurchases)
+	g.GET("/get-user-purchase/:id", r.getUserPurchases)
+	g.GET("/get-product-purchase/:id", r.getProductPurchases)
 }
 
+// makePurcahseInput представляет собой модель данных для запроса на покупку продукта.
 type makePurcahseInput struct {
 	UserID 		int `json:"user_id"`
 	ProductID 	int `json:"product_id"`
 	Quantity 	int `json:"quantity"`
 }
 
+// makePurchase осуществляет покупку продукта
+// @Summary Make a purchase
+// @Description Allows a user to purchase a product by specifying user ID, product ID, and quantity
+// @Tags purchases
+// @Accept json
+// @Produce json
+// @Param input body makePurcahseInput true "Purchase input data"
+// @Success 201 {object} v1.purchaseRoutes.makePurchase.response
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/purchase/make-purchase [post]
 func (r *purchaseRoutes) makePurchase(c *gin.Context) {
 	var input makePurcahseInput
 
@@ -63,24 +77,27 @@ func (r *purchaseRoutes) makePurchase(c *gin.Context) {
 	})
 }
 
-type getUserPurchasesInput struct {
-	UserID int `json:"user_id" validate:"required"`
-}
-
+// getUserPurchases возвращает список покупок пользователя
+// @Summary Get user purchases
+// @Description Retrieve a list of purchases made by a user specified by user ID
+// @Tags purchases
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} v1.purchaseRoutes.getUserPurchases.response
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/purchase/get-user-purchase/{id} [get]
 func (r *purchaseRoutes) getUserPurchases(c *gin.Context) {
-	var input getUserPurchasesInput
-
-	if err := c.ShouldBindBodyWithJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+	param := c.Param("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, string(err.Error()))
 		return
 	}
 
-	if err := r.validator.Struct(input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	purchases, err := r.purchaseService.GetUserPurchases(c.Request.Context(), input.UserID)
+	purchases, err := r.purchaseService.GetUserPurchases(c.Request.Context(), id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return
@@ -95,24 +112,27 @@ func (r *purchaseRoutes) getUserPurchases(c *gin.Context) {
 	})
 }
 
-type getProductPurchasesInput struct {
-	ProductID int `json:"product_id" validate:"required"`
-}
-
+// getProductPurchases возвращает список покупок по идентификатору продукта
+// @Summary Get product purchases
+// @Description Retrieve a list of purchases for a specific product by product ID
+// @Tags purchases
+// @Accept json
+// @Produce json
+// @Param id path int true "Product ID"
+// @Success 200 {object} v1.purchaseRoutes.getProductPurchases.response
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/purchase/get-product-purchase/{id} [get]
 func (r *purchaseRoutes) getProductPurchases(c *gin.Context) {
-	var input getProductPurchasesInput
-
-	if err := c.ShouldBindBodyWithJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+	param := c.Param("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, string(err.Error()))
 		return
 	}
 
-	if err := r.validator.Struct(input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	purchases, err := r.purchaseService.GetProductPurchases(c.Request.Context(), input.ProductID)
+	purchases, err := r.purchaseService.GetProductPurchases(c.Request.Context(), id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return

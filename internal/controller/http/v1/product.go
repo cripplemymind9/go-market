@@ -29,6 +29,7 @@ func newProductRoutes(g *gin.RouterGroup, productService service.Product, valida
 	g.DELETE("/delete-product/:id", r.deleteProduct)
 }
 
+// addProductInput представляет собой модель данных для добавления продукта.
 type addProductInput struct {
 	Name 		string 	`json:"name" validate:"required"`
 	Description string 	`json:"description" validate:"required"`
@@ -36,6 +37,18 @@ type addProductInput struct {
 	Quantity 	int		`json:"quantity" validate:"required"`
 }
 
+// addProduct добавляет новый продукт в каталог
+// @Summary Add a new product
+// @Description Add a new product with name, description, price, and quantity
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param input body addProductInput true "Product input"
+// @Success 201 {object} v1.productRoutes.addProduct.response
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/products/add-product [post]
 func (r *productRoutes) addProduct(c *gin.Context) {
 	var input addProductInput
 
@@ -73,6 +86,15 @@ func (r *productRoutes) addProduct(c *gin.Context) {
 	})
 }
 
+// getAllProducts возвращает список всех продуктов
+// @Summary Get all products
+// @Description Retrieve a list of all available products
+// @Tags products
+// @Produce json
+// @Success 200 {object} v1.productRoutes.getAllProducts.response
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/products/get-products [get]
 func (r *productRoutes) getAllProducts(c *gin.Context) {
 	var products []entity.Product
 
@@ -90,7 +112,17 @@ func (r *productRoutes) getAllProducts(c *gin.Context) {
 	})
 }
 
-
+// getProduct возвращает информацию о продукте по его идентификатору
+// @Summary Get product by ID
+// @Description Retrieve a product by its ID
+// @Tags products
+// @Produce json
+// @Param id path int true "Product ID"
+// @Success 200 {object} v1.productRoutes.getProduct.response
+// @Failure 400 {object} ErrorResonse "Invalid product ID"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/products/get-product/{id} [get]
 func (r *productRoutes) getProduct(c *gin.Context) {
 	param := c.Param("id")
 	id, err := strconv.Atoi(param)
@@ -114,6 +146,7 @@ func (r *productRoutes) getProduct(c *gin.Context) {
 	})
 }
 
+// updateProductInput представляет собой модель данных для обновления продукта.
 type updateProductInput struct {
 	Name 			string 	`json:"name" validate:"required"`
 	Description 	string 	`json:"description" validate:"required"`
@@ -121,6 +154,19 @@ type updateProductInput struct {
 	Quantity 		int 	`json:"quantity" validate:"required"`
 }
 
+// updateProduct обновляет информацию о продукте по его идентификатору
+// @Summary Update product by ID
+// @Description Update product details by ID with new name, description, price, and quantity
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param id path int true "Product ID"
+// @Param input body updateProductInput true "Product update input"
+// @Success 200 {object} map[string]interface{} "Success message"
+// @Failure 400 {object} ErrorResonse "Invalid request body or validation error"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/products/update-product/{id} [put]
 func (r *productRoutes) updateProduct(c *gin.Context) {
 	param := c.Param("id")
 	id, err := strconv.Atoi(param)
@@ -157,6 +203,17 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	})
 }
 
+// deleteProduct удаляет продукт по его идентификатору
+// @Summary Delete product by ID
+// @Description Delete a product by its ID
+// @Tags products
+// @Produce json
+// @Param id path int true "Product ID"
+// @Success 200 {object} map[string]interface{} "Success message"
+// @Failure 400 {object} ErrorResonse "Invalid product ID"
+// @Failure 500 {object} ErrorResonse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /api/v1/products/delete-product/{id} [delete]
 func (r *productRoutes) deleteProduct(c *gin.Context) {
 	param := c.Param("id")
 	id, err := strconv.Atoi(param)
