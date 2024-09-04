@@ -3,20 +3,21 @@ package app
 import (
 	"fmt"
 	"os"
-	"syscall"
 	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"github.com/go-playground/validator/v10"
+	log "github.com/sirupsen/logrus"
+	_ "github.com/lib/pq"
 
 	"github.com/cripplemymind9/go-market/config"
 	v1 "github.com/cripplemymind9/go-market/internal/controller/http/v1"
 	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/service"
+	"github.com/cripplemymind9/go-market/pkg/hasher"
 	"github.com/cripplemymind9/go-market/pkg/httpserver"
 	"github.com/cripplemymind9/go-market/pkg/postgres"
-	"github.com/cripplemymind9/go-market/pkg/hasher"
 )
 
 func Run(configPath string) {
@@ -24,6 +25,11 @@ func Run(configPath string) {
 	cfg, err := config.NewConfig(configPath)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to initialize config")	
+	}
+
+	err = InitMigrations()
+	if err != nil {
+		log.WithError(err).Fatal("Failed to initialize migrations")
 	}
 
 	// Initialize logger

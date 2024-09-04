@@ -93,7 +93,6 @@ func (r *ProductRepo) GetProductById(ctx context.Context, productId int) (entity
 	if err != nil {
 		return entity.Product{}, fmt.Errorf("ProductRepo.GetProductById - r.Builder.Select: %v", err)
 	}
-	fmt.Printf("Generated SQL: %s, Args: %v\n", sql, args)
 
 	var product entity.Product
 	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
