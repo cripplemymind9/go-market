@@ -101,6 +101,7 @@ func (r *productRoutes) getAllProducts(c *gin.Context) {
 	products, err := r.productService.GetAllProducts(c.Request.Context())
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
+		return
 	}
 
 	type response struct {
