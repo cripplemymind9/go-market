@@ -1,10 +1,11 @@
 package repository
 
 import (
-	"github.com/cripplemymind9/go-market/internal/repository/pgdb"
-	"github.com/cripplemymind9/go-market/internal/entity"
-	"github.com/cripplemymind9/go-market/pkg/postgres"
 	"context"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
+	"github.com/cripplemymind9/go-market/internal/repository/pgdb"
+	"github.com/cripplemymind9/go-market/pkg/postgres"
 )
 
 type User interface {
@@ -35,8 +36,8 @@ type Repositories struct {
 
 func NewRepositories(pg *postgres.Postgres) *Repositories {
 	return &Repositories{
-		User: pgdb.NewUserRepo(pg),
-		Product: pgdb.NewProductRepo(pg),
+		User:     pgdb.NewUserRepo(pg),
+		Product:  pgdb.NewProductRepo(pg),
 		Purchase: pgdb.NewPurchaseRepo(pg),
 	}
 }

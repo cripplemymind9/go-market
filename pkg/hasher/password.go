@@ -7,7 +7,7 @@ type PasswordHasher interface {
 	VerifyPassword(savedHash, inputPassword string) error
 }
 
-type BcryptHasher struct {}
+type BcryptHasher struct{}
 
 func NewBcryptHasher() *BcryptHasher {
 	return &BcryptHasher{}

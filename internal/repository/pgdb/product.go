@@ -1,14 +1,16 @@
 package pgdb
 
 import (
-	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
-	"github.com/cripplemymind9/go-market/internal/entity"
-	"github.com/cripplemymind9/go-market/pkg/postgres"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5"
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
+	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
+	"github.com/cripplemymind9/go-market/pkg/postgres"
 )
 
 type ProductRepo struct {

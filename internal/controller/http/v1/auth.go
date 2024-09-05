@@ -1,23 +1,25 @@
 package v1
 
 import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/cripplemymind9/go-market/internal/service"
 	"github.com/cripplemymind9/go-market/internal/service/serviceerrs"
 	"github.com/cripplemymind9/go-market/internal/service/types"
-	"github.com/go-playground/validator/v10"
-	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type authRoutes struct {
 	authService service.Auth
-	validator 	*validator.Validate
+	validator   *validator.Validate
 }
 
 func newAuthRoutes(g *gin.RouterGroup, authService service.Auth, validator *validator.Validate) {
 	r := &authRoutes{
-		authService: 	authService,
-		validator: 		validator,
+		authService: authService,
+		validator:   validator,
 	}
 
 	g.POST("/sign-up", r.signUp)
@@ -28,7 +30,7 @@ func newAuthRoutes(g *gin.RouterGroup, authService service.Auth, validator *vali
 type signUpInput struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
-	Email 	 string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required,email"`
 }
 
 // signUp регистрирует нового пользователя
@@ -56,9 +58,9 @@ func (r *authRoutes) signUp(c *gin.Context) {
 	}
 
 	id, err := r.authService.RegisterUser(c.Request.Context(), types.AuthRegisterUserInput{
-		Username: 	input.Username,
-		Password: 	input.Password,
-		Email: 		input.Email,
+		Username: input.Username,
+		Password: input.Password,
+		Email:    input.Email,
 	})
 	if err != nil {
 		if err == serviceerrs.ErrUserAlreadyExists {

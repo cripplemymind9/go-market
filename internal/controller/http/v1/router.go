@@ -1,12 +1,13 @@
 package v1
 
 import (
-	"github.com/cripplemymind9/go-market/internal/service"
-	"github.com/go-playground/validator/v10"
-	_ "github.com/cripplemymind9/go-market/docs"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	swaggerFiles "github.com/swaggo/files"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/cripplemymind9/go-market/docs"
+	"github.com/cripplemymind9/go-market/internal/service"
 )
 
 type ErrorResonse struct {

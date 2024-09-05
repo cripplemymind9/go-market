@@ -7,29 +7,29 @@ import (
 )
 
 const (
-	defaultReadTimeout 		= 5 * time.Second
-	defaultWriteTimeout 	= 5 * time.Second
-	defaultAddr 			= ":8080"
-	defaultShutdownTimeout 	= 3 * time.Second
+	defaultReadTimeout     = 5 * time.Second
+	defaultWriteTimeout    = 5 * time.Second
+	defaultAddr            = ":8080"
+	defaultShutdownTimeout = 3 * time.Second
 )
 
 type Server struct {
-	server 			*http.Server
-	notify 			chan error
+	server          *http.Server
+	notify          chan error
 	shutdownTimeout time.Duration
 }
 
 func New(handler http.Handler, opts ...Option) *Server {
 	httpServer := &http.Server{
-		Handler: 		handler,
-		ReadTimeout: 	defaultReadTimeout,
-		WriteTimeout: 	defaultWriteTimeout,
-		Addr: 			defaultAddr,
+		Handler:      handler,
+		ReadTimeout:  defaultReadTimeout,
+		WriteTimeout: defaultWriteTimeout,
+		Addr:         defaultAddr,
 	}
 
 	s := &Server{
-		server: httpServer,
-		notify: make(chan error, 1),
+		server:          httpServer,
+		notify:          make(chan error, 1),
 		shutdownTimeout: defaultShutdownTimeout,
 	}
 
@@ -38,7 +38,7 @@ func New(handler http.Handler, opts ...Option) *Server {
 	}
 
 	s.start()
-	
+
 	return s
 }
 
@@ -49,7 +49,7 @@ func (s *Server) start() {
 	}()
 }
 
-func (s *Server) Notify() <- chan error {
+func (s *Server) Notify() <-chan error {
 	return s.notify
 }
 

@@ -1,25 +1,27 @@
 package v1
 
 import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/internal/service"
 	"github.com/cripplemymind9/go-market/internal/service/serviceerrs"
 	"github.com/cripplemymind9/go-market/internal/service/types"
-	"github.com/cripplemymind9/go-market/internal/entity"
-	"github.com/go-playground/validator/v10"
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type productRoutes struct {
-	productService 	service.Product
-	validator 		*validator.Validate
+	productService service.Product
+	validator      *validator.Validate
 }
 
 func newProductRoutes(g *gin.RouterGroup, productService service.Product, validator *validator.Validate) {
 	r := &productRoutes{
 		productService: productService,
-		validator: 		validator,
+		validator:      validator,
 	}
 
 	g.POST("/add-product", r.addProduct)
@@ -31,10 +33,10 @@ func newProductRoutes(g *gin.RouterGroup, productService service.Product, valida
 
 // addProductInput представляет собой модель данных для добавления продукта.
 type addProductInput struct {
-	Name 		string 	`json:"name" validate:"required"`
-	Description string 	`json:"description" validate:"required"`
-	Price 		float64 `json:"price" validate:"required"`
-	Quantity 	int		`json:"quantity" validate:"required"`
+	Name        string  `json:"name" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Price       float64 `json:"price" validate:"required"`
+	Quantity    int     `json:"quantity" validate:"required"`
 }
 
 // addProduct добавляет новый продукт в каталог
@@ -63,10 +65,10 @@ func (r *productRoutes) addProduct(c *gin.Context) {
 	}
 
 	id, err := r.productService.AddProduct(c.Request.Context(), types.ProductAddProductInput{
-		Name: input.Name,
+		Name:        input.Name,
 		Description: input.Description,
-		Price: input.Price,
-		Quantity: input.Quantity,
+		Price:       input.Price,
+		Quantity:    input.Quantity,
 	})
 	if err != nil {
 		if err == serviceerrs.ErrProductAlreadyExists {
@@ -149,10 +151,10 @@ func (r *productRoutes) getProduct(c *gin.Context) {
 
 // updateProductInput представляет собой модель данных для обновления продукта.
 type updateProductInput struct {
-	Name 			string 	`json:"name" validate:"required"`
-	Description 	string 	`json:"description" validate:"required"`
-	Price 			float64 `json:"price" validate:"required"`
-	Quantity 		int 	`json:"quantity" validate:"required"`
+	Name        string  `json:"name" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Price       float64 `json:"price" validate:"required"`
+	Quantity    int     `json:"quantity" validate:"required"`
 }
 
 // updateProduct обновляет информацию о продукте по его идентификатору
@@ -189,11 +191,11 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	}
 
 	if err := r.productService.UpdateProduct(c.Request.Context(), types.ProductUpdateProductInput{
-		ID: id,
-		Name: input.Name,
+		ID:          id,
+		Name:        input.Name,
 		Description: input.Description,
-		Price: input.Price,
-		Quantity: input.Quantity,
+		Price:       input.Price,
+		Quantity:    input.Quantity,
 	}); err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		return

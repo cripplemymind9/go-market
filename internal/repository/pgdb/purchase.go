@@ -1,14 +1,16 @@
 package pgdb
 
 import (
-	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
-	"github.com/cripplemymind9/go-market/internal/entity"
-	"github.com/cripplemymind9/go-market/pkg/postgres"
-	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5/pgconn"
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
+	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
+	"github.com/cripplemymind9/go-market/pkg/postgres"
 )
 
 type PurchaseRepo struct {
@@ -25,7 +27,7 @@ func (r *PurchaseRepo) MakePurchase(ctx context.Context, purchase entity.Purchas
 		return 0, fmt.Errorf("PurchaseRepo.MakePurchase - r.Pool.Begin: %v", err)
 	}
 	defer tx.Rollback(ctx)
-	
+
 	sql, args, err := r.Builder.
 		Update("products").
 		Set("quantity", squirrel.Expr("quantity - ?", purchase.Quantity)).
@@ -139,7 +141,7 @@ func (r *PurchaseRepo) GetProductPurchases(ctx context.Context, productId int) (
 			return nil, fmt.Errorf("PurchaseRepo.GetProductPurchases - rows.Next:%v", err)
 		}
 		purchases = append(purchases, purchase)
-	}	
+	}
 
 	return purchases, nil
 }

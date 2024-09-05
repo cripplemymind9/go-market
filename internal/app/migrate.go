@@ -1,9 +1,10 @@
 package app
 
 import (
+	"errors"
 	"os"
 	"time"
-	"errors"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -24,13 +25,13 @@ func InitMigrations() error {
 
 	var (
 		attempts = defaultAttempts
-		err     error
-		m       *migrate.Migrate
+		err      error
+		m        *migrate.Migrate
 	)
 
 	for attempts > 0 {
 		m, err = migrate.New("file://migrations", databaseURL)
-		if err != nil  {
+		if err != nil {
 			return err
 		}
 
@@ -56,7 +57,7 @@ func InitMigrations() error {
 		return nil
 	}
 
-	log.Printf("Migrate: up success")	
+	log.Printf("Migrate: up success")
 
 	return nil
 }

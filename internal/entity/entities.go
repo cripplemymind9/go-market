@@ -3,10 +3,10 @@ package entity
 import "time"
 
 type User struct {
-	ID       	int
-	Username 	string
-	Password 	string
-	Email    	string
+	ID       int
+	Username string
+	Password string
+	Email    string
 }
 
 type Product struct {
@@ -18,9 +18,9 @@ type Product struct {
 }
 
 type Purchase struct {
-	ID        	int
-	UserID    	int
-	ProductID 	int
-	Quantity 	int
-	Timestamp 	time.Time
+	ID        int
+	UserID    int
+	ProductID int
+	Quantity  int
+	Timestamp time.Time
 }

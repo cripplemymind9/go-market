@@ -1,24 +1,26 @@
 package v1
 
 import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/internal/service"
 	"github.com/cripplemymind9/go-market/internal/service/types"
-	"github.com/go-playground/validator/v10"
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type purchaseRoutes struct {
 	purchaseService service.Purchase
-	validator 		*validator.Validate
+	validator       *validator.Validate
 }
 
 func newPurchaseRoutes(g *gin.RouterGroup, purchaseService service.Purchase, validator *validator.Validate) {
 	r := &purchaseRoutes{
-		purchaseService: 	purchaseService,
-		validator: 			validator,
+		purchaseService: purchaseService,
+		validator:       validator,
 	}
 
 	g.POST("/make-purchase", r.makePurchase)
@@ -28,9 +30,9 @@ func newPurchaseRoutes(g *gin.RouterGroup, purchaseService service.Purchase, val
 
 // makePurcahseInput представляет собой модель данных для запроса на покупку продукта.
 type makePurcahseInput struct {
-	UserID 		int `json:"user_id"`
-	ProductID 	int `json:"product_id"`
-	Quantity 	int `json:"quantity"`
+	UserID    int `json:"user_id"`
+	ProductID int `json:"product_id"`
+	Quantity  int `json:"quantity"`
 }
 
 // makePurchase осуществляет покупку продукта
@@ -59,9 +61,9 @@ func (r *purchaseRoutes) makePurchase(c *gin.Context) {
 	}
 
 	id, err := r.purchaseService.MakePurchase(c.Request.Context(), types.PurchaseMakePurchaseInput{
-		UserID: input.UserID,
+		UserID:    input.UserID,
 		ProductID: input.ProductID,
-		Quantity: input.Quantity,
+		Quantity:  input.Quantity,
 	})
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "internal server error")

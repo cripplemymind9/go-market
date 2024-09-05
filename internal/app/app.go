@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	log "github.com/sirupsen/logrus"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/cripplemymind9/go-market/config"
 	v1 "github.com/cripplemymind9/go-market/internal/controller/http/v1"
@@ -24,15 +24,10 @@ func Run(configPath string) {
 	// Configuration
 	cfg, err := config.NewConfig(configPath)
 	if err != nil {
-		log.WithError(err).Fatal("Failed to initialize config")	
+		log.WithError(err).Fatal("Failed to initialize config")
 	}
 
-	err = InitMigrations()
-	if err != nil {
-		log.WithError(err).Fatal("Failed to initialize migrations")
-	}
-
-	// Initialize logger
+	// logger
 	SetLogrus(cfg.Log.Level)
 
 	// Postgres
@@ -43,15 +38,21 @@ func Run(configPath string) {
 	}
 	defer pg.Close()
 
+	//  Migrations
+	err = InitMigrations()
+	if err != nil {
+		log.WithError(err).Fatal("Failed to initialize migrations")
+	}
+
 	// Repositories
 	log.Info("Initializing repositories...")
 	repositories := repository.NewRepositories(pg)
 
 	// Services dependencies
 	deps := service.ServiceDependencies{
-		Repos: *repositories,
-		Hasher: hasher.NewBcryptHasher(),
-		SignKey: cfg.JWT.SignKey,
+		Repos:    *repositories,
+		Hasher:   hasher.NewBcryptHasher(),
+		SignKey:  cfg.JWT.SignKey,
 		TokenTTL: cfg.JWT.TokenTTL,
 	}
 	services := service.NewServices(deps)
@@ -61,7 +62,7 @@ func Run(configPath string) {
 
 	// Gin router
 	router := gin.Default()
-	router .Use(func(c *gin.Context) {
+	router.Use(func(c *gin.Context) {
 		c.Set("validator", validator)
 		c.Next()
 	})
@@ -83,7 +84,7 @@ func Run(configPath string) {
 		log.Infof("app - Run - httpServer.Notify: %v", err)
 	}
 
-	// Gracefull shutdown
+	// Graceful shutdown
 	log.Info("Shutting down HTTP server...")
 	if err := httpServer.Shutdown(); err != nil {
 		log.WithError(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err)).Error("Failed to shutdown HTTP server")

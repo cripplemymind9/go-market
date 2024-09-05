@@ -1,14 +1,16 @@
 package impl
 
 import (
+	"context"
+	"errors"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/cripplemymind9/go-market/internal/entity"
+	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
 	"github.com/cripplemymind9/go-market/internal/service/serviceerrs"
 	"github.com/cripplemymind9/go-market/internal/service/types"
-	"github.com/cripplemymind9/go-market/internal/repository"
-	"github.com/cripplemymind9/go-market/internal/entity"
-	log "github.com/sirupsen/logrus"
-	"context"
-	"errors"
 )
 
 type ProductService struct {
@@ -21,12 +23,12 @@ func NewProductService(productRepo repository.Product) *ProductService {
 
 func (s *ProductService) AddProduct(ctx context.Context, input types.ProductAddProductInput) (int, error) {
 	product := entity.Product{
-		Name: input.Name,
+		Name:        input.Name,
 		Description: input.Description,
-		Price: input.Price,
-		Quantity: input.Quantity,
+		Price:       input.Price,
+		Quantity:    input.Quantity,
 	}
-	
+
 	id, err := s.productRepo.AddProduct(ctx, product)
 	if err != nil {
 		if errors.Is(err, repoerrs.ErrAlreadyExists) {
@@ -58,11 +60,11 @@ func (s *ProductService) GetProductById(ctx context.Context, productId int) (ent
 
 func (s *ProductService) UpdateProduct(ctx context.Context, input types.ProductUpdateProductInput) error {
 	product := entity.Product{
-		ID: input.ID,
-		Name: input.Name,
+		ID:          input.ID,
+		Name:        input.Name,
 		Description: input.Description,
-		Price: input.Price,
-		Quantity: input.Quantity,
+		Price:       input.Price,
+		Quantity:    input.Quantity,
 	}
 
 	return s.productRepo.UpdateProduct(ctx, product)

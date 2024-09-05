@@ -1,11 +1,11 @@
 package httpserver
 
 import (
-	"time"
 	"net"
+	"time"
 )
 
-type Option func(*Server) 
+type Option func(*Server)
 
 func Port(port string) Option {
 	return func(s *Server) {

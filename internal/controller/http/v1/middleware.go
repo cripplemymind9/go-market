@@ -1,10 +1,11 @@
 package v1
 
 import (
-	"github.com/cripplemymind9/go-market/internal/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/cripplemymind9/go-market/internal/service"
+	"github.com/gin-gonic/gin"
 )
 
 const (

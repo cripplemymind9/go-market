@@ -13,7 +13,6 @@ import (
 	"github.com/cripplemymind9/go-market/internal/service/types"
 	"github.com/cripplemymind9/go-market/pkg/hasher"
 	"github.com/golang/mock/gomock"
-	// "golang.org/x/crypto/bcrypt"
 )
 
 func TestAuthService_RegisterUser(t *testing.T) {
@@ -160,7 +159,7 @@ func TestAuthService_GenerateToken(t *testing.T) {
 					Password: hashedPassword,
 				}, nil)
 			},
-			want: hashedPassword,
+			want:    hashedPassword,
 			wantErr: false,
 		},
 		{

@@ -1,14 +1,15 @@
 package postgres
 
 import (
-	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5"
 	"context"
-	"time"
 	"fmt"
 	"log"
+	"time"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -36,14 +37,14 @@ type Postgres struct {
 	connTimeout  time.Duration
 
 	Builder squirrel.StatementBuilderType
-	Pool PgxPool
+	Pool    PgxPool
 }
 
 func New(url string, opts ...Option) (*Postgres, error) {
 	pg := &Postgres{
-		maxPoolSize: defaultMaxPoolSize,
+		maxPoolSize:  defaultMaxPoolSize,
 		connAttempts: defaultConnAttempts,
-		connTimeout: defaultConnTimeout,
+		connTimeout:  defaultConnTimeout,
 	}
 
 	for _, opt := range opts {
@@ -63,7 +64,7 @@ func New(url string, opts ...Option) (*Postgres, error) {
 		pg.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
 		if err != nil {
 			log.Printf("Failed to connect to Postgres after %d attempts: %v", defaultConnAttempts, err)
-    		return nil, fmt.Errorf("pgdb - New - pgxpool.NewWithConfig: %w", err)
+			return nil, fmt.Errorf("pgdb - New - pgxpool.NewWithConfig: %w", err)
 		}
 
 		log.Printf("Postgres is trying to connect, attempts left: %d", pg.connAttempts)

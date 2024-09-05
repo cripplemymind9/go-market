@@ -6,35 +6,36 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt/v4"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/repository/repoerrs"
 	"github.com/cripplemymind9/go-market/internal/service/serviceerrs"
 	"github.com/cripplemymind9/go-market/internal/service/types"
 	"github.com/cripplemymind9/go-market/pkg/hasher"
-	log "github.com/sirupsen/logrus"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 type TokenClaims struct {
 	jwt.RegisteredClaims
-	UserID 			int
-	Username 	string
+	UserID   int
+	Username string
 }
 
 type AuthService struct {
-	userRepo 		repository.User
-	passwordHasher 	hasher.PasswordHasher
-	signKey 		string
-	tokenTTL		time.Duration
+	userRepo       repository.User
+	passwordHasher hasher.PasswordHasher
+	signKey        string
+	tokenTTL       time.Duration
 }
 
 func NewAuthService(userRepo repository.User, passwordHasher hasher.PasswordHasher, signKey string, tokenTTL time.Duration) *AuthService {
 	return &AuthService{
-		userRepo: userRepo,
+		userRepo:       userRepo,
 		passwordHasher: passwordHasher,
-		signKey: signKey,
-		tokenTTL: tokenTTL,
+		signKey:        signKey,
+		tokenTTL:       tokenTTL,
 	}
 }
 
@@ -47,7 +48,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, input types.AuthRegister
 	user := entity.User{
 		Username: input.Username,
 		Password: hashedPassword,
-		Email: input.Email,
+		Email:    input.Email,
 	}
 
 	userId, err := s.userRepo.RegisterUser(ctx, user)
@@ -80,9 +81,9 @@ func (s *AuthService) GenerateToken(ctx context.Context, input types.AuthGenerat
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &TokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.tokenTTL)),
-            IssuedAt:  jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		UserID: user.ID,
+		UserID:   user.ID,
 		Username: user.Username,
 	})
 
@@ -99,7 +100,7 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	claims := &TokenClaims{}
 	token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil,  fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(s.signKey), nil
 	})

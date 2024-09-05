@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
+	"time"
+
 	"github.com/cripplemymind9/go-market/internal/entity"
 	"github.com/cripplemymind9/go-market/internal/repository"
 	"github.com/cripplemymind9/go-market/internal/service/impl"
 	"github.com/cripplemymind9/go-market/internal/service/types"
 	"github.com/cripplemymind9/go-market/pkg/hasher"
-	"context"
-	"time"
 )
 
 type Auth interface {
@@ -31,23 +32,23 @@ type Purchase interface {
 }
 
 type Services struct {
-	Auth Auth
-	Product Product
+	Auth     Auth
+	Product  Product
 	Purchase Purchase
 }
 
 type ServiceDependencies struct {
-	Repos repository.Repositories
+	Repos  repository.Repositories
 	Hasher hasher.PasswordHasher
 
-	SignKey string
+	SignKey  string
 	TokenTTL time.Duration
 }
 
 func NewServices(deps ServiceDependencies) *Services {
 	return &Services{
-		Auth: impl.NewAuthService(deps.Repos.User, deps.Hasher, deps.SignKey, deps.TokenTTL),
-		Product: impl.NewProductService(deps.Repos.Product),
+		Auth:     impl.NewAuthService(deps.Repos.User, deps.Hasher, deps.SignKey, deps.TokenTTL),
+		Product:  impl.NewProductService(deps.Repos.Product),
 		Purchase: impl.NewPurchaseService(deps.Repos.Purchase),
 	}
 }

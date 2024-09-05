@@ -9,6 +9,10 @@ compose-down:
 	docker-compose down
 .PHONY: compose-down
 
+linter-golangci:
+	golangci-lint run
+.PHONY: linter-golangci
+
 test:
 	go test -v ./internal/service/impl
 
